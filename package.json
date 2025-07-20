@@ -3,11 +3,12 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://chetanchauhan14.github.io/GeoAttendance/",
+  "homepage": "https://chetanchauhan14.github.io/GeoAttendance",
   "scripts": {
     "dev": "expo start",
     "build:web": "expo export --platform web",
     "lint": "expo lint",
+    "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "start": "react-scripts start",
@@ -51,7 +52,8 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "^0.20.0",
     "react-native-webview": "13.13.5",
-    "gh-pages": "^6.2.0"
+    "gh-pages": "^6.2.0",
+    "react-scripts": "5.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

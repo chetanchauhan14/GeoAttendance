@@ -7,6 +7,7 @@ import { AttendanceRecord, AttendanceSummary } from '@/types/attendance';
 import { sessionStorageService } from '@/utils/sessionStorageService';
 import { getWTDSummary, getMTDSummary, getQTDSummary } from '@/utils/reportGenerators';
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
+import { useFocusEffect } from '@react-navigation/native';
 
 type ReportPeriod = 'week' | 'month' | 'quarter';
 
