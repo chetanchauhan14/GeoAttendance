@@ -1,127 +1,67 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Button, Searchbar, SegmentedButtons } from 'react-native-paper';
-import { AttendanceSummaryCard } from '@/components/AttendanceSummaryCard';
-import { AttendanceRecordItem } from '@/components/AttendanceRecordItem';
-import { AttendanceRecord, AttendanceSummary } from '@/types/attendance';
+import { Button, Card } from 'react-native-paper';
+import { useRouter } from 'expo-router';
+import { AttendanceSummary } from '@/types/attendance';
 import { sessionStorageService } from '@/utils/sessionStorageService';
 import { getWTDSummary, getMTDSummary, getQTDSummary } from '@/utils/reportGenerators';
-import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
-import { useFocusEffect } from '@react-navigation/native';
-
-type ReportPeriod = 'week' | 'month' | 'quarter';
+import { ChartBar as BarChart3, FileText, Calendar, TrendingUp } from 'lucide-react-native';
 
 export default function ReportsScreen() {
-  const [wtdSummary, setWtdSummary] = useState<AttendanceSummary>({
-    totalWorkingDays: 0,
-    daysPresent: 0,
-    daysAbsent: 0,
-    attendancePercentage: 0
-  });
-  const [mtdSummary, setMtdSummary] = useState<AttendanceSummary>({
-    totalWorkingDays: 0,
-    daysPresent: 0,
-    daysAbsent: 0,
-    attendancePercentage: 0
-  });
-  const [qtdSummary, setQtdSummary] = useState<AttendanceSummary>({
-    totalWorkingDays: 0,
-    daysPresent: 0,
-    daysAbsent: 0,
-    attendancePercentage: 0
-  });
-  const [selectedPeriod, setSelectedPeriod] = useState<ReportPeriod>('month');
-  const [detailedRecords, setDetailedRecords] = useState<AttendanceRecord[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [wtdSummary, setWtdSummary] = useState<AttendanceSummary | null>(null);
+  const [mtdSummary, setMtdSummary] = useState<AttendanceSummary | null>(null);
+  const [qtdSummary, setQtdSummary] = useState<AttendanceSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    loadReports();
+    loadSummaries();
   }, []);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      loadReports();
-      loadDetailedRecords();
-    }, [selectedPeriod])
-  );
-
-  useEffect(() => {
-    loadDetailedRecords();
-  }, [selectedPeriod]);
-
-  const loadReports = async () => {
+  const loadSummaries = async () => {
     setIsLoading(true);
     try {
       const userId = sessionStorageService.getCurrentUserId();
       const now = new Date();
       const startOfYear = new Date(now.getFullYear(), 0, 1);
       
-      // Get all records for the year to calculate summaries
+      // Get all records from session storage
       const allRecords = await sessionStorageService.getAttendanceRecords(
         userId,
         startOfYear,
         now
       );
 
-      // Calculate summaries
+      // Calculate summaries using the same data source
       setWtdSummary(getWTDSummary(allRecords));
       setMtdSummary(getMTDSummary(allRecords));
       setQtdSummary(getQTDSummary(allRecords));
     } catch (error) {
-      console.error('Error loading reports:', error);
+      console.error('Error loading summaries:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadDetailedRecords = async () => {
-    try {
-      const userId = sessionStorageService.getCurrentUserId();
-      const now = new Date();
-      let startDate: Date;
-      let endDate: Date;
-
-      switch (selectedPeriod) {
-        case 'week':
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
-          endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay() + 6);
-          break;
-        case 'month':
-          startDate = startOfMonth(now);
-          endDate = endOfMonth(now);
-          break;
-        case 'quarter':
-          const quarter = Math.floor(now.getMonth() / 3);
-          startDate = new Date(now.getFullYear(), quarter * 3, 1);
-          endDate = new Date(now.getFullYear(), (quarter + 1) * 3, 0);
-          break;
-      }
-
-      const records = await sessionStorageService.getAttendanceRecords(
-        userId,
-        startDate,
-        endDate
-      );
-      setDetailedRecords(records);
-    } catch (error) {
-      console.error('Error loading detailed records:', error);
-    }
-  };
-
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await loadReports();
-    await loadDetailedRecords();
+    await loadSummaries();
     setIsRefreshing(false);
   };
 
-  const filteredRecords = detailedRecords.filter(record =>
-    searchQuery === '' ||
-    record.reason?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    record.type.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const navigateToSummary = () => {
+    router.push('/summary' as any);
+  };
+
+  const navigateToDetailedRecords = () => {
+    router.push('/detailed-records' as any);
+  };
+
+  const getSummaryPreview = (summary: AttendanceSummary | null, title: string) => {
+    if (!summary) return 'No data';
+    return `${summary.daysPresent}/${summary.totalWorkingDays} days (${summary.attendancePercentage.toFixed(1)}%)`;
+  };
 
   return (
     <ScrollView 
@@ -133,69 +73,64 @@ export default function ReportsScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Attendance Reports</Text>
         <Text style={styles.subtitle}>
-          Track your attendance patterns and history
+          Overview of your attendance patterns
         </Text>
       </View>
 
-      <View style={styles.summaryContainer}>
-        <AttendanceSummaryCard
-          title="Week to Date"
-          summary={wtdSummary}
-          isLoading={isLoading}
-        />
-        <AttendanceSummaryCard
-          title="Month to Date"
-          summary={mtdSummary}
-          isLoading={isLoading}
-        />
-        <AttendanceSummaryCard
-          title="Quarter to Date"
-          summary={qtdSummary}
-          isLoading={isLoading}
-        />
+      <View style={styles.quickSummary}>
+        <Text style={styles.sectionTitle}>Quick Summary</Text>
+        
+        <Card style={styles.summaryCard}>
+          <View style={styles.summaryContent}>
+            <View style={styles.summaryRow}>
+              <Calendar size={20} color="#2196F3" />
+              <Text style={styles.summaryLabel}>Week to Date:</Text>
+              <Text style={styles.summaryValue}>
+                {isLoading ? 'Loading...' : getSummaryPreview(wtdSummary, 'WTD')}
+              </Text>
+            </View>
+            
+            <View style={styles.summaryRow}>
+              <TrendingUp size={20} color="#4CAF50" />
+              <Text style={styles.summaryLabel}>Month to Date:</Text>
+              <Text style={styles.summaryValue}>
+                {isLoading ? 'Loading...' : getSummaryPreview(mtdSummary, 'MTD')}
+              </Text>
+            </View>
+            
+            <View style={styles.summaryRow}>
+              <BarChart3 size={20} color="#FF9800" />
+              <Text style={styles.summaryLabel}>Quarter to Date:</Text>
+              <Text style={styles.summaryValue}>
+                {isLoading ? 'Loading...' : getSummaryPreview(qtdSummary, 'QTD')}
+              </Text>
+            </View>
+          </View>
+        </Card>
       </View>
 
-      <View style={styles.detailedSection}>
-        <Text style={styles.sectionTitle}>Detailed Records</Text>
+      <View style={styles.navigationSection}>
+        <Text style={styles.sectionTitle}>Detailed Reports</Text>
         
-        <SegmentedButtons
-          value={selectedPeriod}
-          onValueChange={(value) => setSelectedPeriod(value as ReportPeriod)}
-          buttons={[
-            { value: 'week', label: 'This Week' },
-            { value: 'month', label: 'This Month' },
-            { value: 'quarter', label: 'This Quarter' },
-          ]}
-          style={styles.periodSelector}
-        />
-
-        <Searchbar
-          placeholder="Search records..."
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-          style={styles.searchBar}
-        />
-
-        <View style={styles.recordsList}>
-          {filteredRecords.length > 0 ? (
-            filteredRecords.map((record) => (
-              <AttendanceRecordItem key={record.id} record={record} />
-            ))
-          ) : (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>
-                No attendance records found for this period.
-              </Text>
-              <Button
-                mode="outlined"
-                onPress={() => {/* Navigate to attendance screen */}}
-                style={styles.emptyButton}
-              >
-                Mark Attendance
-              </Button>
-            </View>
-          )}
-        </View>
+        <Button
+          mode="contained"
+          onPress={navigateToSummary}
+          style={styles.navButton}
+          contentStyle={styles.buttonContent}
+          icon={() => <BarChart3 size={20} color="#FFFFFF" />}
+        >
+          View Summary Reports
+        </Button>
+        
+        <Button
+          mode="outlined"
+          onPress={navigateToDetailedRecords}
+          style={styles.navButton}
+          contentStyle={styles.buttonContent}
+          icon={() => <FileText size={20} color="#2196F3" />}
+        >
+          View Detailed Records
+        </Button>
       </View>
     </ScrollView>
   );
@@ -221,10 +156,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#E3F2FD',
   },
-  summaryContainer: {
-    padding: 8,
-  },
-  detailedSection: {
+  quickSummary: {
     padding: 16,
   },
   sectionTitle: {
@@ -233,30 +165,38 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 16,
   },
-  periodSelector: {
-    marginBottom: 16,
+  summaryCard: {
+    elevation: 4,
   },
-  searchBar: {
-    marginBottom: 16,
-    elevation: 2,
+  summaryContent: {
+    padding: 16,
   },
-  recordsList: {
+  summaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
     gap: 8,
   },
-  emptyState: {
-    alignItems: 'center',
-    padding: 32,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    elevation: 2,
-  },
-  emptyText: {
-    fontSize: 16,
+  summaryLabel: {
+    fontSize: 14,
     color: '#666',
-    marginBottom: 16,
-    textAlign: 'center',
+    flex: 1,
   },
-  emptyButton: {
-    borderColor: '#2196F3',
+  summaryValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    flex: 1,
+    textAlign: 'right',
+  },
+  navigationSection: {
+    padding: 16,
+    gap: 12,
+  },
+  navButton: {
+    borderRadius: 8,
+  },
+  buttonContent: {
+    paddingVertical: 8,
   },
 });

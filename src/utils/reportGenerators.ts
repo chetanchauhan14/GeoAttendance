@@ -1,11 +1,8 @@
-import { AttendanceRecord, AttendanceSummary } from '@/types/attendance';
+import { AttendanceRecord, AttendanceSummary } from '../types/attendance';
 import {
   startOfWeek,
-  endOfWeek,
   startOfMonth,
-  endOfMonth,
   startOfQuarter,
-  endOfQuarter,
   eachDayOfInterval,
   isWeekend,
   format,

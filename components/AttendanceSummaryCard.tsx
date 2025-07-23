@@ -5,17 +5,19 @@ import { AttendanceSummary } from '@/types/attendance';
 
 interface AttendanceSummaryCardProps {
   title: string;
-  summary: AttendanceSummary;
+  summary: AttendanceSummary | null;
   isLoading?: boolean;
 }
 
 export function AttendanceSummaryCard({ title, summary, isLoading = false }: AttendanceSummaryCardProps) {
-  if (isLoading) {
+  if (isLoading || !summary) {
     return (
       <Card style={styles.card}>
         <View style={styles.content}>
           <Text style={styles.title}>{title}</Text>
-          <Text style={styles.loadingText}>Loading...</Text>
+          <Text style={styles.loadingText}>
+            {isLoading ? 'Loading...' : 'No data available'}
+          </Text>
         </View>
       </Card>
     );

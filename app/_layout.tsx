@@ -11,7 +11,10 @@ export default function RootLayout() {
   return (
     <PaperProvider>
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="summary" />
+        <Stack.Screen name="detailed-records" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

@@ -105,6 +105,10 @@ export function getCurrentLocationStatus(): Promise<LocationStatus> {
         },
         (error) => {
           console.error('Location error:', error);
+          // Check if error is due to permission denial
+          if (error.code === 1) { // PERMISSION_DENIED
+            locationStatus.hasPermission = false;
+          }
           resolve(locationStatus);
         },
         {
