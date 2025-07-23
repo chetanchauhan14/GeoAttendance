@@ -96,7 +96,7 @@ export class SessionStorageService {
   private getAllUsersSync(): User[] {
     // Use cache if available
     if (this.usersCache) {
-      return this.usersCache;
+      return this.usersCache ?? [];
     }
 
     const usersData = sessionStorage.getItem('users');
@@ -124,7 +124,7 @@ export class SessionStorageService {
     }
     
     this.usersCache = JSON.parse(usersData);
-    return this.usersCache;
+    return this.usersCache ?? [];
   }
 
   /**
@@ -211,7 +211,7 @@ export class SessionStorageService {
   private getAllAttendanceRecordsSync(): AttendanceRecord[] {
     // Use cache if available
     if (this.attendanceRecordsCache) {
-      return this.attendanceRecordsCache;
+      return this.attendanceRecordsCache ?? [];
     }
 
     const recordsData = sessionStorage.getItem('attendanceRecords');
@@ -224,7 +224,7 @@ export class SessionStorageService {
     }
     
     this.attendanceRecordsCache = JSON.parse(recordsData);
-    return this.attendanceRecordsCache;
+    return this.attendanceRecordsCache ?? [];
   }
 
   /**

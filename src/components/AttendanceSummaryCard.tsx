@@ -1,4 +1,3 @@
-import React from 'react';
 import { AttendanceSummary } from '../types/attendance';
 
 interface AttendanceSummaryCardProps {
@@ -12,7 +11,7 @@ export function AttendanceSummaryCard({ title, summary, isLoading = false }: Att
     return (
       <div className="card">
         <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#2196F3' }}>{title}</h3>
-        <p style={{ fontSize: '16px', color: '#666', textAlign: 'center', paddingVertical: '32px' }}>
+        <p style={{ fontSize: '16px', color: '#666', textAlign: 'center', paddingTop: '32px', paddingBottom: '32px' }}>
           {isLoading ? 'Loading...' : 'No data available'}
         </p>
       </div>

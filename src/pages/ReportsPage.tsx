@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BarChart3, FileText, Calendar, TrendingUp } from 'lucide-react';
 import { AttendanceSummary } from '../types/attendance';
@@ -39,7 +39,7 @@ export default function ReportsPage() {
     }
   };
 
-  const getSummaryPreview = (summary: AttendanceSummary | null, title: string) => {
+  const getSummaryPreview = (summary: AttendanceSummary | null, _title: string) => {
     if (!summary) return 'No data';
     return `${summary.daysPresent}/${summary.totalWorkingDays} days (${summary.attendancePercentage.toFixed(1)}%)`;
   };

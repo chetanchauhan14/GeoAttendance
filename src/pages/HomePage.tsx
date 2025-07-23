@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, BarChart3, Settings } from 'lucide-react';
 
@@ -22,7 +21,7 @@ export default function HomePage() {
         <div
           className="card"
           onClick={() => navigateToSection('/attendance')}
-          style={{ cursor: 'pointer', textAlign: 'center', transition: 'transform 0.2s', ':hover': { transform: 'translateY(-2px)' } }}
+          style={{ cursor: 'pointer', textAlign: 'center', transition: 'transform 0.2s' }}
         >
           <MapPin size={32} color="#2196F3" style={{ margin: '0 auto 12px' }} />
           <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#333', marginBottom: '8px' }}>Attendance</h3>

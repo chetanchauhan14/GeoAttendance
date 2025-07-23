@@ -1,4 +1,3 @@
-import React from 'react';
 import { Locate, LocateOff, CheckCircle, AlertCircle } from 'lucide-react';
 import { LocationStatus as LocationStatusType } from '../types/attendance';
 import { formatDistance } from '../utils/locationUtils';

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, Clock } from 'lucide-react';
+import { ArrowLeft, CheckCircle } from 'lucide-react';
 import { LocationStatus } from '../components/LocationStatus';
 import { LocationStatus as LocationStatusType } from '../types/attendance';
 import { getCurrentLocationStatus } from '../utils/locationUtils';

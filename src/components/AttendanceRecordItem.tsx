@@ -1,4 +1,3 @@
-import React from 'react';
 import { MapPin, User, Clock } from 'lucide-react';
 import { AttendanceRecord } from '../types/attendance';
 import { formatAttendanceRecord } from '../utils/reportGenerators';
