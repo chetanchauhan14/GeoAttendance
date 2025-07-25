@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 import { LocationStatus } from '../components/LocationStatus';
 import { LocationStatus as LocationStatusType } from '../types/attendance';
-import { getCurrentLocationStatus } from '../utils/locationUtils';
+import { checkUserLocation } from '../utils/locationUtils';
 import { sessionStorageService } from '../utils/sessionStorageService';
 
 export default function AttendancePage() {
@@ -33,7 +33,7 @@ export default function AttendancePage() {
   const checkLocationStatus = async () => {
     setIsLoading(true);
     try {
-      const status = await getCurrentLocationStatus();
+      const status = await checkUserLocation();
       setLocationStatus(status);
     } catch (error) {
       console.error('Error checking location:', error);

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Users, UserPlus, Calendar } from 'lucide-react';
-import { User } from '../types/attendance';
+import { User, AuthorizedLocation } from '../types/attendance';
 import { sessionStorageService } from '../utils/sessionStorageService';
+import { getCurrentLocationStatus } from '../utils/locationUtils';
+
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -14,9 +16,63 @@ export default function AdminPage() {
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
 
+  const [fetchingLocation, setFetchingLocation] = useState(false);
+
+  const handleFetchLocation = async () => {
+    setFetchingLocation(true);
+    try {
+      const status = await getCurrentLocationStatus();
+      if (
+        status &&
+        typeof status.latitude === 'number' &&
+        typeof status.longitude === 'number'
+      ) {
+        setAuthLocation((prev) => ({
+          ...prev,
+          latitude: status.latitude,
+          longitude: status.longitude,
+        }));
+        setAuthLocationMsg('Fetched current location!');
+        setTimeout(() => setAuthLocationMsg(''), 2000);
+      } else {
+        setAuthLocationMsg('Unable to fetch location.');
+        setTimeout(() => setAuthLocationMsg(''), 2000);
+      }
+    } catch (e) {
+      setAuthLocationMsg('Error fetching location.');
+      setTimeout(() => setAuthLocationMsg(''), 2000);
+    } finally {
+      setFetchingLocation(false);
+    }
+  };
+
+  // State for authorized location form
+  const [authLocation, setAuthLocation] = useState<AuthorizedLocation>({
+    latitude: 12.933382651731844,
+    longitude: 77.70289831523786,
+    radius: 2000,
+    name: 'Office Location',
+  });
+  const [authLocationMsg, setAuthLocationMsg] = useState<string>('');
+
+  // Load current authorized location from sessionStorage on mount
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleAuthLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setAuthLocation((prev) => ({
+      ...prev,
+      [name]: name === 'radius' || name === 'latitude' || name === 'longitude' ? Number(value) : value,
+    }));
+  };
+
+  const handleSaveAuthLocation = () => {
+    sessionStorageService.writeAuthorizedLocation(authLocation);
+    setAuthLocationMsg('Authorized location updated!');
+    setTimeout(() => setAuthLocationMsg(''), 2000);
+  };
 
   const loadData = async () => {
     setIsLoading(true);
@@ -28,6 +84,8 @@ export default function AdminPage() {
       
       setCurrentUser(user);
       setAllUsers(users);
+      const stored = sessionStorageService.readAuthorizedLocation(authLocation);
+      setAuthLocation(stored);
     } catch (error) {
       console.error('Error loading admin data:', error);
     } finally {
@@ -52,7 +110,7 @@ export default function AdminPage() {
       setNewUserEmail('');
       setShowUserForm(false);
       loadData();
-      
+      console.log(currentUser);
       alert('Success: User created successfully!');
     } catch (error) {
       console.error('Error creating user:', error);
@@ -69,7 +127,7 @@ export default function AdminPage() {
     user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const isAdmin = currentUser?.role === 'admin';
+  // const isAdmin = currentUser?.role === 'admin';
 
   if (isLoading) {
     return (
@@ -79,37 +137,6 @@ export default function AdminPage() {
     );
   }
 
-  if (!isAdmin) {
-    return (
-      <div className="container">
-        <div className="header">
-          <button
-            onClick={() => navigate('/')}
-            style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
-            <ArrowLeft size={20} />
-            Back
-          </button>
-          <h1 className="title">Access Denied</h1>
-          <p className="subtitle">
-            You don't have admin privileges
-          </p>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px', minHeight: '50vh' }}>
-          <p style={{ fontSize: '16px', color: '#666', textAlign: 'center', marginBottom: '24px', lineHeight: '24px' }}>
-            This section is only available to administrators.
-            Please contact your system administrator for access.
-          </p>
-          <button
-            onClick={() => navigate('/attendance')}
-            className="button button-outlined"
-          >
-            Back to Attendance
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="container">
@@ -122,6 +149,7 @@ export default function AdminPage() {
           Back
         </button>
         <h1 className="title">Admin Panel</h1>
+
         <p className="subtitle">
           Manage users and attendance records
         </p>
@@ -146,6 +174,56 @@ export default function AdminPage() {
       </div>
 
       <div style={{ padding: '16px' }}>
+        {/* Authorized Location Form */}
+        <div className="card" style={{ marginBottom: '16px', maxWidth: 500 }}>
+          <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#333', marginBottom: 12 }}>Set Authorized Location</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <input
+              type="text"
+              name="name"
+              placeholder="Location Name"
+              value={authLocation.name}
+              onChange={handleAuthLocationChange}
+              className="input"
+            />
+            <input
+              type="number"
+              name="latitude"
+              placeholder="Latitude"
+              value={authLocation.latitude}
+              onChange={handleAuthLocationChange}
+              className="input"
+              step="any"
+            />
+            <input
+              type="number"
+              name="longitude"
+              placeholder="Longitude"
+              value={authLocation.longitude}
+              onChange={handleAuthLocationChange}
+              className="input"
+              step="any"
+            />
+            <input
+              type="number"
+              name="radius"
+              placeholder="Radius (meters)"
+              value={authLocation.radius}
+              onChange={handleAuthLocationChange}
+              className="input"
+              min="1"
+            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <button onClick={handleFetchLocation} className="button button-outlined" type="button" disabled={fetchingLocation}>
+                {fetchingLocation ? 'Fetching...' : 'Fetch Location'}
+              </button>
+              <button onClick={handleSaveAuthLocation} className="button" style={{ backgroundColor: '#2196F3' }}>
+                Save Location
+              </button>
+            </div>
+            {authLocationMsg && <span style={{ color: 'green', fontSize: 14 }}>{authLocationMsg}</span>}
+          </div>
+        </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#333' }}>Users</h2>
           <button

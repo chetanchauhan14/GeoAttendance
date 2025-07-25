@@ -1,9 +1,31 @@
-import { AttendanceRecord, User } from '../types/attendance';
+import { AttendanceRecord, User, AuthorizedLocation } from '../types/attendance';
+
 
 /**
  * Session storage service for handling all data operations in the browser
  */
 export class SessionStorageService {
+  /**
+   * Read the authorized location from sessionStorage, or return default if not set
+   */
+  readAuthorizedLocation(defaultLocation: AuthorizedLocation): AuthorizedLocation {
+    const stored = sessionStorage.getItem('authorizedLocation');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return defaultLocation;
+      }
+    }
+    return defaultLocation;
+  }
+
+  /**
+   * Write the authorized location to sessionStorage
+   */
+  writeAuthorizedLocation(location: AuthorizedLocation): void {
+    sessionStorage.setItem('authorizedLocation', JSON.stringify(location));
+  }
   private static instance: SessionStorageService;
   private usersCache: User[] | null = null;
   private attendanceRecordsCache: AttendanceRecord[] | null = null;
@@ -71,7 +93,7 @@ export class SessionStorageService {
     if (!user && userId === this.getCurrentUserId()) {
       const defaultUser: User = {
         uid: userId,
-        name: 'Demo User',
+        name: 'Morgan Employee',
         email: 'demo@example.com',
         role: 'employee',
         createdAt: new Date().toISOString(),
@@ -105,8 +127,8 @@ export class SessionStorageService {
       const demoUsers: User[] = [
         {
           uid: this.getCurrentUserId(),
-          name: 'Demo User',
-          email: 'demo@example.com',
+          name: 'Chetan Chauhan',
+          email: 'chetanchauhan14@gmail.com',
           role: 'employee',
           createdAt: new Date().toISOString(),
         },

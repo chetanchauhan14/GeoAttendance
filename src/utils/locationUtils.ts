@@ -1,12 +1,18 @@
 import { AuthorizedLocation, LocationStatus } from '../types/attendance';
+import { sessionStorageService } from './sessionStorageService';
+
 
 // Default authorized location (configurable)
-export const AUTHORIZED_LOCATION: AuthorizedLocation = {
+const DEFAULT_AUTHORIZED_LOCATION: AuthorizedLocation = {
   latitude: 12.933382651731844,
   longitude: 77.70289831523786,
   radius: 2000, // 2000 meters radius
   name: 'Office Location'
 };
+
+export function getAuthorizedLocation(): AuthorizedLocation {
+  return sessionStorageService.readAuthorizedLocation(DEFAULT_AUTHORIZED_LOCATION);
+}
 
 /**
  * Calculate the distance between two coordinates using the Haversine formula
@@ -32,9 +38,37 @@ export function calculateDistance(
 }
 
 /**
+ * Get current latitude and longitude from browser geolocation
+ */
+export function getCurrentLocationStatus(): Promise<{ latitude: number; longitude: number } | null> {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      console.error('Geolocation is not supported by this browser.');
+      resolve(null);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        resolve({ latitude, longitude });
+      },
+      (error) => {
+        console.error('Location error:', error);
+        resolve(null);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 10000,
+      }
+    );
+  });
+}
+
+/**
  * Get current location and check if user is within authorized zone
  */
-export function getCurrentLocationStatus(): Promise<LocationStatus> {
+export function checkUserLocation(): Promise<LocationStatus> {
   return new Promise((resolve) => {
     const locationStatus: LocationStatus = {
       hasPermission: false,
@@ -56,16 +90,19 @@ export function getCurrentLocationStatus(): Promise<LocationStatus> {
         locationStatus.hasPermission = true;
         locationStatus.currentLocation = { latitude, longitude };
 
+        // Get the current authorized location
+        const authorizedLocation = getAuthorizedLocation();
+
         // Calculate distance to authorized location
         const distance = calculateDistance(
           latitude,
           longitude,
-          AUTHORIZED_LOCATION.latitude,
-          AUTHORIZED_LOCATION.longitude
+          authorizedLocation.latitude,
+          authorizedLocation.longitude
         );
 
         locationStatus.distance = distance;
-        locationStatus.isInside = distance <= AUTHORIZED_LOCATION.radius;
+        locationStatus.isInside = distance <= authorizedLocation.radius;
 
         resolve(locationStatus);
       },
