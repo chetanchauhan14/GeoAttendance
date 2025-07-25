@@ -11,7 +11,7 @@ export default function HomePage() {
   return (
     <div className="container">
       <div className="header">
-        <h1 className="title">Geo-Attendance App</h1>
+        <h1 className="title">Geo-Attendance</h1>
         <p className="subtitle">
           Track your attendance with location-based verification
         </p>
