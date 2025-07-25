@@ -151,7 +151,7 @@ export default function AdminPage() {
         <h1 className="title">Admin Panel</h1>
 
         <p className="subtitle">
-          Manage users and attendance records
+          Update Geo Location, Manage users and attendance records
         </p>
       </div>
 

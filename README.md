@@ -7,7 +7,7 @@ A comprehensive React Native application for Android that enables personal and m
 ### 🎯 Core Functionality
 - **Geotagged Self-Attendance**: Mark attendance only when within authorized location zones
 - **Manual Attendance Entry**: Add attendance manually with reasons and timestamps
-- **Admin Management**: Administrators can manage users and mark attendance for others
+- **Admin Management**: Administrators can Update Geo Location, manage users and mark attendance for others
 - **Comprehensive Reporting**: WTD, MTD, and QTD attendance summaries with detailed records
 
 ### 📱 User Experience

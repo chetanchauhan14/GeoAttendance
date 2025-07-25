@@ -50,7 +50,7 @@ export default function HomePage() {
           <Settings size={32} color="#FF9800" style={{ margin: '0 auto 12px' }} />
           <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#333', marginBottom: '8px' }}>Admin</h3>
           <p style={{ fontSize: '14px', color: '#666', lineHeight: '20px' }}>
-            Manage users and attendance records
+            Update Geo Location, Manage users and attendance records
           </p>
         </div>
       </div>

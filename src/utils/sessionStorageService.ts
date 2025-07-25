@@ -9,7 +9,7 @@ export class SessionStorageService {
    * Read the authorized location from sessionStorage, or return default if not set
    */
   readAuthorizedLocation(defaultLocation: AuthorizedLocation): AuthorizedLocation {
-    const stored = sessionStorage.getItem('authorizedLocation');
+    const stored = localStorage.getItem('authorizedLocation');
     if (stored) {
       try {
         return JSON.parse(stored);
@@ -24,7 +24,7 @@ export class SessionStorageService {
    * Write the authorized location to sessionStorage
    */
   writeAuthorizedLocation(location: AuthorizedLocation): void {
-    sessionStorage.setItem('authorizedLocation', JSON.stringify(location));
+    localStorage.setItem('authorizedLocation', JSON.stringify(location));
   }
   private static instance: SessionStorageService;
   private usersCache: User[] | null = null;
@@ -49,10 +49,10 @@ export class SessionStorageService {
    * Get current user ID (generate a random one if not exists)
    */
   getCurrentUserId(): string {
-    let userId = sessionStorage.getItem('currentUserId');
+    let userId = localStorage.getItem('currentUserId');
     if (!userId) {
       userId = 'user_' + Math.random().toString(36).substr(2, 9);
-      sessionStorage.setItem('currentUserId', userId);
+    localStorage.setItem('currentUserId', userId);
     }
     return userId;
   }
@@ -77,7 +77,7 @@ export class SessionStorageService {
       users.push(user);
     }
     
-    sessionStorage.setItem('users', JSON.stringify(users));
+    localStorage.setItem('users', JSON.stringify(users));
     this.clearCaches();
   }
 
@@ -121,7 +121,7 @@ export class SessionStorageService {
       return this.usersCache ?? [];
     }
 
-    const usersData = sessionStorage.getItem('users');
+    const usersData = localStorage.getItem('users');
     if (!usersData) {
       // Create some demo users
       const demoUsers: User[] = [
@@ -140,7 +140,7 @@ export class SessionStorageService {
           createdAt: new Date().toISOString(),
         }
       ];
-      sessionStorage.setItem('users', JSON.stringify(demoUsers));
+      localStorage.setItem('users', JSON.stringify(demoUsers));
       this.usersCache = demoUsers;
       return demoUsers;
     }
@@ -172,7 +172,7 @@ export class SessionStorageService {
 
     const records = this.getAllAttendanceRecordsSync();
     records.push(record);
-    sessionStorage.setItem('attendanceRecords', JSON.stringify(records));
+    localStorage.setItem('attendanceRecords', JSON.stringify(records));
     this.clearCaches();
   }
 
@@ -236,11 +236,11 @@ export class SessionStorageService {
       return this.attendanceRecordsCache ?? [];
     }
 
-    const recordsData = sessionStorage.getItem('attendanceRecords');
+    const recordsData = localStorage.getItem('attendanceRecords');
     if (!recordsData) {
       // Start with empty records - no dummy data
       const emptyRecords: AttendanceRecord[] = [];
-      sessionStorage.setItem('attendanceRecords', JSON.stringify(emptyRecords));
+      localStorage.setItem('attendanceRecords', JSON.stringify(emptyRecords));
       this.attendanceRecordsCache = emptyRecords;
       return emptyRecords;
     }
@@ -253,9 +253,9 @@ export class SessionStorageService {
    * Clear all data (for testing purposes)
    */
   clearAllData(): void {
-    sessionStorage.removeItem('users');
-    sessionStorage.removeItem('attendanceRecords');
-    sessionStorage.removeItem('currentUserId');
+    localStorage.removeItem('users');
+    localStorage.removeItem('attendanceRecords');
+    localStorage.removeItem('currentUserId');
     this.clearCaches();
   }
 }
